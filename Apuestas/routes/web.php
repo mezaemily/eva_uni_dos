@@ -3,21 +3,15 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 
 // ═══════════════════════════════════════════════
-//  RUTA RAÍZ
+//  RUTA RAÍZ — muestra la landing page
 // ═══════════════════════════════════════════════
-
-// Al entrar a "/" redirige según si hay sesión activa o no
 Route::get('/', function () {
-    if (Auth::check()) {
-        return redirect()->route('front.home');
-    }
-    return redirect()->route('login');
+    return view('welcome');
 });
 
-// Alias /dashboard para que funcione el link de la vista welcome de Laravel
+// Alias /dashboard para que no rompa el link interno de Laravel
 Route::get('/dashboard', function () {
     return redirect()->route('front.home');
 })->middleware('auth')->name('dashboard');
@@ -25,7 +19,6 @@ Route::get('/dashboard', function () {
 // ═══════════════════════════════════════════════
 //  FRONT — área del jugador  (/casino/...)
 // ═══════════════════════════════════════════════
-
 Route::middleware(['auth'])->prefix('casino')->name('front.')->group(function () {
     Route::get('/',          [FrontController::class, 'home'])       ->name('home');
     Route::get('/partidos',  [FrontController::class, 'matches'])    ->name('matches');
@@ -38,7 +31,6 @@ Route::middleware(['auth'])->prefix('casino')->name('front.')->group(function ()
 // ═══════════════════════════════════════════════
 //  ADMIN — panel de gestión  (/admin/...)
 // ═══════════════════════════════════════════════
-
 Route::middleware(['auth'])->prefix('admin')->name('dash.')->group(function () {
     Route::get('/',              [DashboardController::class, 'index'])        ->name('index');
     Route::get('/usuarios',      [DashboardController::class, 'users'])        ->name('users');
