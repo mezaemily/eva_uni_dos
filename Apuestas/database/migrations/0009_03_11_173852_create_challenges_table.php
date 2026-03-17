@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('challenges', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('creator_id')->constrained('users');
-            $table->foreignId('opponent_id')->constrained('users');
+            $table->foreignId('creator_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('opponent_id')->constrained('users')->cascadeOnDelete();
             $table->string('status')->default('pending');
             $table->timestamps();
         });
