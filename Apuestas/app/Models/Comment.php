@@ -4,9 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
-    protected $fillable = [
-        'user_id',
-        'match_id',
-        'content',
-    ];
+    protected $fillable = ['user_id','match_id','content'];
+    public function user()  { return $this->belongsTo(User::class); }
+    public function match() { return $this->belongsTo(GameMatch::class, 'match_id'); }
 }

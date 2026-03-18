@@ -14,19 +14,18 @@ use App\Models\User;
 
 class DashboardController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        // Opcional: proteger todo el dash solo para admin
-        // $this->middleware(function($req, $next) {
-        //     abort_unless(Auth::user()->role === 'admin', 403);
-        //     return $next($req);
-        // });
-    }
+    /**
+     * IMPORTANTE: Se eliminó el constructor con $this->middleware('auth')
+     * ya que en Laravel 11 esto causa error. La protección se maneja 
+     * directamente en el archivo de rutas web.php.
+     */
 
-    // ── INDEX ──────────────────────────────────────────────
+    // ── INDEX / DASHBOARD PRINCIPAL ────────────────────────
     public function index()
     {
+        // Seguridad adicional: Solo el admin ve el resumen global
+        abort_unless(Auth::user()->role === 'admin', 403);
+
         $totalUsers        = User::count();
         $newUsersToday     = User::whereDate('created_at', today())->count();
         $totalBets         = Bet::count();
@@ -77,6 +76,8 @@ class DashboardController extends Controller
     // ── BETS ───────────────────────────────────────────────
     public function bets()
     {
+        abort_unless(Auth::user()->role === 'admin', 403);
+
         $bets = Bet::with(['user', 'match.teamHome', 'match.teamAway', 'match.sport', 'odd'])
             ->latest()->paginate(20);
 
@@ -97,6 +98,8 @@ class DashboardController extends Controller
     // ── MATCHES ────────────────────────────────────────────
     public function matches(Request $request)
     {
+        abort_unless(Auth::user()->role === 'admin', 403);
+
         $query = GameMatch::with(['sport', 'teamHome', 'teamAway', 'odds']);
 
         if ($request->filled('sport'))  $query->where('sport_id', $request->sport);
@@ -111,6 +114,8 @@ class DashboardController extends Controller
     // ── MINES ──────────────────────────────────────────────
     public function mines()
     {
+        abort_unless(Auth::user()->role === 'admin', 403);
+
         $games = MineGame::with('user')->latest()->paginate(20);
 
         $all = MineGame::query();
@@ -130,6 +135,8 @@ class DashboardController extends Controller
     // ── CHALLENGES ─────────────────────────────────────────
     public function challenges()
     {
+        abort_unless(Auth::user()->role === 'admin', 403);
+
         $challenges = Challenge::with(['creator', 'opponent', 'challengeBets'])
             ->latest()->paginate(20);
 
@@ -147,6 +154,8 @@ class DashboardController extends Controller
     // ── TRANSACTIONS ───────────────────────────────────────
     public function transactions()
     {
+        abort_unless(Auth::user()->role === 'admin', 403);
+
         $transactions = Transaction::with('user')->latest()->paginate(25);
 
         $stats = [

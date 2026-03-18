@@ -2,165 +2,71 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Bet;
-use App\Models\Transaction;
 use App\Models\GameMatch;
-use App\Models\MineGame;
 use App\Models\Challenge;
-use App\Models\Sport;
-use App\Models\User;
+use App\Models\Bet;
+use App\Models\MineGame;
+use Illuminate\Support\Facades\Auth;
 
 class FrontController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
-    // ── HOME / LOBBY ───────────────────────────────────────
-    public function home()
+    public function home() 
     {
         $user = Auth::user();
 
-        $wonBets        = Bet::where('user_id', $user->id)->where('status', 'won')->count();
-        $pendingBets    = Bet::where('user_id', $user->id)->where('status', 'pending')->count();
+        // 1. Estadísticas básicas
+        $wonBets = Bet::where('user_id', $user->id)->where('status', 'won')->count();
+        $pendingBets = Bet::where('user_id', $user->id)->where('status', 'pending')->count();
         $scheduledMatches = GameMatch::where('status', 'scheduled')->count();
-        $pendingChallenges = Challenge::where(function($q) use ($user) {
-            $q->where('creator_id', $user->id)->orWhere('opponent_id', $user->id);
-        })->where('status', 'pending')->count();
+        
+        // 2. Solución para image_e8db5c.png (Mis últimas apuestas)
+        $myBets = Bet::where('user_id', $user->id)->latest()->take(5)->get();
 
+        // 3. Solución para image_e9447a.png (Próximos partidos)
         $nextMatches = GameMatch::with(['sport', 'teamHome', 'teamAway'])
             ->where('status', 'scheduled')
-            ->orderBy('match_date')
-            ->take(4)
+            ->latest()
+            ->take(6)
             ->get();
 
-        $myBets = Bet::with(['match.teamHome', 'match.teamAway', 'odd'])
-            ->where('user_id', $user->id)
-            ->latest()
-            ->take(5)
-            ->get();
+        // 4. Desafíos pendientes
+        $pendingChallenges = Challenge::where('opponent_id', $user->id)
+            ->where('status', 'pending')
+            ->count();
 
         return view('front.home', compact(
-            'wonBets', 'pendingBets', 'scheduledMatches',
-            'pendingChallenges', 'nextMatches', 'myBets'
+            'wonBets', 
+            'pendingBets', 
+            'scheduledMatches', 
+            'myBets', 
+            'nextMatches', 
+            'pendingChallenges'
         ));
     }
 
-    // ── MATCHES ────────────────────────────────────────────
-    public function matches(Request $request)
-    {
-        $query = GameMatch::with(['sport', 'teamHome', 'teamAway', 'odds', 'comments'])
-            ->where('status', 'scheduled');
-
-        if ($request->filled('sport')) {
-            $query->where('sport_id', $request->sport);
-        }
-
-        $matches = $query->orderBy('match_date')->paginate(9);
-        $sports  = Sport::orderBy('name')->get();
-
-        return view('front.matches', compact('matches', 'sports'));
-    }
-
-    // ── MINES ──────────────────────────────────────────────
     public function mines()
     {
         $user = Auth::user();
-
-        $activeGame = MineGame::with('tiles')
-            ->where('user_id', $user->id)
-            ->where('status', 'playing')
-            ->latest()
-            ->first();
-
-        $recentGames = MineGame::where('user_id', $user->id)
-            ->latest()
-            ->take(8)
-            ->get();
-
-        $all = MineGame::where('user_id', $user->id);
-
-        $stats = [
-            'total'           => (clone $all)->count(),
-            'won'             => (clone $all)->where('status', 'won')->count(),
-            'lost'            => (clone $all)->where('status', 'lost')->count(),
-            'total_winnings'  => (clone $all)->where('status', 'won')->sum('winnings'),
-        ];
-
-        return view('front.mines', compact('activeGame', 'recentGames', 'stats'));
+        $activeGame = MineGame::where('user_id', $user->id)->where('status', 'playing')->first();
+        return view('front.mines', compact('activeGame'));
     }
 
-    // ── CHALLENGES ─────────────────────────────────────────
     public function challenges()
     {
         $user = Auth::user();
-
-        $challenges = Challenge::with(['creator', 'opponent', 'challengeBets'])
-            ->where(function($q) use ($user) {
-                $q->where('creator_id', $user->id)
-                  ->orWhere('opponent_id', $user->id);
-            })
-            ->latest()
-            ->paginate(15);
-
-        $all = Challenge::where(function($q) use ($user) {
-            $q->where('creator_id', $user->id)->orWhere('opponent_id', $user->id);
-        });
-
         $stats = [
-            'total'    => (clone $all)->count(),
-            'pending'  => (clone $all)->where('status', 'pending')->count(),
-            'accepted' => (clone $all)->where('status', 'accepted')->count(),
-            'rejected' => (clone $all)->where('status', 'rejected')->count(),
+            'total' => Challenge::where('creator_id', $user->id)->orWhere('opponent_id', $user->id)->count(),
+            'pending' => Challenge::where('status', 'pending')->count(),
+            'accepted' => Challenge::where('status', 'accepted')->count(),
+            'rejected' => Challenge::where('status', 'rejected')->count(),
         ];
-
-        return view('front.challenges', compact('challenges', 'stats'));
+        $activeChallenges = Challenge::where('opponent_id', $user->id)->where('status', 'pending')->get();
+        return view('front.challenges', compact('activeChallenges', 'stats'));
     }
 
-    // ── MY BETS ────────────────────────────────────────────
-    public function mybets()
+    public function matches()
     {
-        $user = Auth::user();
-
-        $bets = Bet::with(['match.teamHome', 'match.teamAway', 'match.sport', 'odd'])
-            ->where('user_id', $user->id)
-            ->latest()
-            ->paginate(15);
-
-        $all = Bet::where('user_id', $user->id);
-
-        $stats = [
-            'total'          => (clone $all)->count(),
-            'won'            => (clone $all)->where('status', 'won')->count(),
-            'lost'           => (clone $all)->where('status', 'lost')->count(),
-            'pending'        => (clone $all)->where('status', 'pending')->count(),
-            'won_amount'     => (clone $all)->where('status', 'won')->sum('potential_win'),
-            'lost_amount'    => (clone $all)->where('status', 'lost')->sum('amount'),
-            'pending_amount' => (clone $all)->where('status', 'pending')->sum('amount'),
-        ];
-
-        return view('front.mybets', compact('bets', 'stats'));
-    }
-
-    // ── PROFILE ────────────────────────────────────────────
-    public function profile()
-    {
-        $user = Auth::user();
-
-        $transactions = Transaction::where('user_id', $user->id)
-            ->latest()
-            ->paginate(10);
-
-        $stats = [
-            'totalBets'  => Bet::where('user_id', $user->id)->count(),
-            'wonBets'    => Bet::where('user_id', $user->id)->where('status', 'won')->count(),
-            'mineGames'  => MineGame::where('user_id', $user->id)->count(),
-            'followers'  => \App\Models\Follower::where('following_id', $user->id)->count(),
-        ];
-
-        return view('front.profile', compact('transactions', 'stats'));
+        $matches = GameMatch::with(['sport', 'teamHome', 'teamAway'])->latest()->get();
+        return view('front.matches', compact('matches'));
     }
 }

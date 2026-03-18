@@ -39,7 +39,6 @@
             min-height: 100vh;
         }
 
-        /* subtle noise overlay */
         body::before {
             content: '';
             position: fixed;
@@ -49,7 +48,6 @@
             z-index: 0;
         }
 
-        /* ── TOPBAR ── */
         .topbar {
             height: 64px;
             background: var(--bg2);
@@ -174,10 +172,8 @@
         }
         .logout-btn:hover { border-color: var(--red); color: var(--red); }
 
-        /* ── CONTENT ── */
         .wrap { max-width: 1280px; margin: 0 auto; padding: 28px 24px; position:relative; z-index:1; }
 
-        /* ── CARDS ── */
         .card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -206,7 +202,6 @@
             display: inline-block;
         }
 
-        /* ── STAT ── */
         .stat {
             background: var(--card);
             border: 1px solid var(--border);
@@ -228,7 +223,6 @@
         .stat.y .stat-val { color: var(--gold); }
         .stat.b .stat-val { color: var(--blue); }
 
-        /* glow line on stat */
         .stat::after {
             content: '';
             position: absolute;
@@ -241,13 +235,11 @@
         .stat.y::after { background: linear-gradient(90deg,transparent,var(--gold),transparent);  opacity:.4; }
         .stat.b::after { background: linear-gradient(90deg,transparent,var(--blue),transparent);  opacity:.4; }
 
-        /* ── GRIDS ── */
         .g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
         .g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
         .g2 { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
         .mt { margin-top: 22px; }
 
-        /* ── TABLE ── */
         .tw { overflow-x: auto; }
         table { width:100%; border-collapse:collapse; font-size:13px; }
         thead th {
@@ -271,7 +263,6 @@
         tbody tr { transition: background .1s; }
         tbody tr:hover td { background: rgba(255,255,255,.018); }
 
-        /* ── BADGES ── */
         .bx {
             font-family: var(--h);
             font-size: 11px;
@@ -294,8 +285,9 @@
         .bx.deposit   { background:rgba(46,204,113,.12);  color:#4ade80; border:1px solid rgba(46,204,113,.25); }
         .bx.withdrawal{ background:rgba(231,76,60,.12);   color:#f87171; border:1px solid rgba(231,76,60,.25); }
         .bx.bet_win   { background:rgba(52,152,219,.15);  color:#60a5fa; border:1px solid rgba(52,152,219,.25); }
+        .bx.admin     { background:rgba(240,192,64,.1);   color:#e8c840; border:1px solid rgba(240,192,64,.2); }
+        .bx.user      { background:rgba(107,114,128,.1);  color:#9ca3af; border:1px solid rgba(107,114,128,.2); }
 
-        /* colors */
         .cy { color: var(--gold);  font-weight: 600; }
         .cg { color: var(--green); font-weight: 600; }
         .cr { color: var(--red);   font-weight: 600; }
@@ -316,7 +308,6 @@
 
         .empty { text-align:center; padding:36px; color:var(--muted2); font-size:13px; }
 
-        /* form */
         select, input {
             background: var(--bg3);
             border: 1px solid var(--border2);
@@ -371,10 +362,11 @@
 <body>
 
 <header class="topbar">
-    <a href="{{ route('front.home') }}" class="logo">BetArena</a>
+    {{-- CORREGIDO: URL directa en lugar de route('front.home') --}}
+    <a href="/casino/home" class="logo">BetArena</a>
 
     <nav class="top-nav">
-        <a href="{{ route('front.home') }}"        class="{{ request()->routeIs('front.home')        ? 'active' : '' }}">Inicio</a>
+        <a href="/casino/home"                     class="{{ request()->is('casino/home')       ? 'active' : '' }}">Inicio</a>
         <a href="{{ route('front.matches') }}"     class="{{ request()->routeIs('front.matches')     ? 'active' : '' }}">Partidos</a>
         <a href="{{ route('front.mines') }}"       class="{{ request()->routeIs('front.mines')       ? 'active' : '' }}">Minas</a>
         <a href="{{ route('front.challenges') }}"  class="{{ request()->routeIs('front.challenges')  ? 'active' : '' }}">Desafíos</a>
@@ -385,7 +377,7 @@
     <div class="top-right">
         <div class="balance-pill">
             <div class="coin">$</div>
-            <span class="amount">${{ number_format(auth()->user()->balance, 2) }}</span>
+            <span class="amount">${{ number_format(auth()->user()->balance ?? 0, 2) }}</span>
         </div>
 
         <div class="user-chip">
