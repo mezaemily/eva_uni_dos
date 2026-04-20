@@ -11,6 +11,9 @@ use App\Http\Controllers\Admin\DeporteController;
 use App\Http\Controllers\Admin\EquipoController;
 use App\Http\Controllers\Admin\PartidoController;
 
+Route::get("/docs",function(){
+ return view('docs');
+});
 // ══════════════════════════════════════════════
 //  RAÍZ
 // ══════════════════════════════════════════════
