@@ -31,7 +31,7 @@
                 <tr>
                     <td class="cm">{{ $u->id }}</td>
                     <td style="font-weight:500">{{ $u->name }}</td>
-                    <td class="cm">@{{ $u->username }}</td>
+                    <td class="cm">{{ $u->username }}</td>
                     <td style="font-size:12px;color:var(--text2)">{{ $u->email }}</td>
                     <td class="{{ $u->balance > 0 ? 'cg' : 'cm' }}">${{ number_format($u->balance ?? 0, 2) }}</td>
                     <td class="cm">{{ $u->bets_count }}</td>

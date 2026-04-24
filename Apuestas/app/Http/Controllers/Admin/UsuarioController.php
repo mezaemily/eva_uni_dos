@@ -9,17 +9,23 @@ use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller
 {
+    /** GET /admin/crud/usuarios */
     public function index()
     {
-        $usuarios = User::withCount('bets')->orderByDesc('created_at')->paginate(15);
+        $usuarios = User::withCount('bets')
+            ->orderByDesc('created_at')
+            ->paginate(15);
+
         return view('admin.usuarios.index', compact('usuarios'));
     }
 
+    /** GET /admin/crud/usuarios/crear */
     public function create()
     {
         return view('admin.usuarios.create');
     }
 
+    /** POST /admin/crud/usuarios */
     public function store(Request $request)
     {
         $request->validate([
@@ -29,17 +35,6 @@ class UsuarioController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'balance'  => 'required|numeric|min:0',
             'role'     => 'required|in:admin,user',
-        ], [
-            'name.required'      => 'El nombre es obligatorio.',
-            'name.min'           => 'El nombre debe tener al menos 3 caracteres.',
-            'username.required'  => 'El username es obligatorio.',
-            'username.unique'    => 'Ese username ya está en uso.',
-            'email.required'     => 'El correo es obligatorio.',
-            'email.unique'       => 'Ese correo ya está registrado.',
-            'password.required'  => 'La contraseña es obligatoria.',
-            'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
-            'balance.min'        => 'El saldo no puede ser negativo.',
         ]);
 
         User::create([
@@ -55,11 +50,22 @@ class UsuarioController extends Controller
             ->with('success', 'Usuario creado correctamente.');
     }
 
+    /** GET /admin/crud/usuarios/{usuario} */
+    public function show(User $usuario)
+    {
+        $usuario->loadCount(['bets', 'transactions']);
+        $usuario->load(['bets' => fn($q) => $q->latest()->limit(10)]);
+
+        return view('admin.usuarios.show', compact('usuario'));
+    }
+
+    /** GET /admin/crud/usuarios/{usuario}/editar */
     public function edit(User $usuario)
     {
         return view('admin.usuarios.edit', compact('usuario'));
     }
 
+    /** PUT /admin/crud/usuarios/{usuario} */
     public function update(Request $request, User $usuario)
     {
         $request->validate([
@@ -69,12 +75,6 @@ class UsuarioController extends Controller
             'balance'  => 'required|numeric|min:0',
             'role'     => 'required|in:admin,user',
             'password' => 'nullable|string|min:8|confirmed',
-        ], [
-            'name.required'      => 'El nombre es obligatorio.',
-            'username.unique'    => 'Ese username ya está en uso.',
-            'email.unique'       => 'Ese correo ya está registrado.',
-            'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
         $data = $request->only('name', 'username', 'email', 'balance', 'role');
@@ -89,6 +89,7 @@ class UsuarioController extends Controller
             ->with('success', 'Usuario actualizado correctamente.');
     }
 
+    /** DELETE /admin/crud/usuarios/{usuario} */
     public function destroy(User $usuario)
     {
         if ($usuario->id === auth()->id()) {
@@ -100,5 +101,25 @@ class UsuarioController extends Controller
 
         return redirect()->route('admin.usuarios.index')
             ->with('success', 'Usuario eliminado correctamente.');
+    }
+
+    /** PATCH /admin/crud/usuarios/{usuario}/saldo — ajustar saldo manualmente */
+    public function ajustarSaldo(Request $request, User $usuario)
+    {
+        $request->validate([
+            'monto'       => 'required|numeric',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $usuario->increment('balance', $request->monto);
+
+        $usuario->transactions()->create([
+            'type'        => $request->monto >= 0 ? 'deposito_admin' : 'retiro_admin',
+            'amount'      => abs($request->monto),
+            'description' => $request->descripcion ?? 'Ajuste manual por administrador',
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Saldo ajustado correctamente.');
     }
 }

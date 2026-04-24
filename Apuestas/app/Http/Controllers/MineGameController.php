@@ -177,6 +177,12 @@ class MineGameController extends Controller
     public function status()
     {
         $user = Auth::user();
+
+        // Cancelar cualquier partida en curso al entrar a la página
+        MineGame::where('user_id', $user->id)
+            ->where('status', 'playing')
+            ->update(['status' => 'lost']);
+
         $game = MineGame::where('user_id', $user->id)
             ->where('status', 'playing')
             ->latest()
