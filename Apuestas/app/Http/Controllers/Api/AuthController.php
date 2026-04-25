@@ -24,6 +24,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'name' => $request->name,
+            'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
@@ -84,14 +85,22 @@ class AuthController extends Controller
         }
     }
 
-    public function updateUser(Request $request)
-    {
-        try {
-            $user = Auth::user();
-            $user->update($request->only(['name', 'email']));
-            return response()->json($user);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Failed to update user'], 500);
+public function updateUser(Request $request)
+{
+    try {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'No se encontró el usuario. El Token no es válido o no se envió.'], 401);
         }
+
+        $user->update($request->only(['name', 'email']));
+        return response()->json([
+            'message' => 'Usuario actualizado con éxito',
+            'user' => $user
+        ]);
+    } catch (\Exception $e) { 
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
 }
