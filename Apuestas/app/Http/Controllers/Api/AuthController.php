@@ -103,4 +103,20 @@ public function updateUser(Request $request)
         return response()->json(['error' => $e->getMessage()], 500);
     }
 }
+/**
+     * GET /api/usuarios-sistema
+     * Devuelve la lista de todos los usuarios registrados.
+     */
+    public function usuariosSistema()
+    {
+        // Traemos todos los usuarios con sus campos básicos
+        $usuarios = \App\Models\User::select('id', 'name', 'email', 'balance', 'role')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return response()->json([
+            'total' => $usuarios->count(),
+            'usuarios' => $usuarios
+        ]);
+    }
 }

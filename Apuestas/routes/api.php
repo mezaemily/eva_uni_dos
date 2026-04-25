@@ -24,6 +24,13 @@ Route::middleware('jwt')->group(function () {
     Route::get('/user',     [AuthController::class, 'getUser']);
     Route::put('/user',     [AuthController::class, 'updateUser']);
     Route::post('/logout',  [AuthController::class, 'logout']);
+    Route::group(['middleware' => 'auth:api'], function () {
+    // ... tus otras rutas ...
+   Route::group(['middleware' => 'auth:api'], function () {
+    // ... tus otras rutas ...
+    Route::get('/usuarios-sistema', [AuthController::class, 'usuariosSistema']);
+});
+});
 
     // ── Usuarios ────────────────────────────────
     Route::apiResource('usuarios', UsuarioController::class);

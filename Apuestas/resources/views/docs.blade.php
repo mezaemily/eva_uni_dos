@@ -54,6 +54,9 @@
         .api-desc { color: var(--text-muted); margin-bottom: 1rem; font-size: .92rem; }
         .auth-note { font-size: .82rem; color: var(--text-muted); margin-bottom: 1rem; }
 
+        /* NEW: admin badge */
+        .badge-admin { display: inline-flex; align-items: center; gap: .3rem; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 6px; padding: .2rem .6rem; font-size: .75rem; font-weight: 700; }
+
         /* CODE BLOCKS */
         .code-block-header { display: flex; justify-content: space-between; align-items: center; background: #2d2d2d; padding: .45rem 1rem; border-radius: 8px 8px 0 0; color: #ccc; font-size: .75rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
         pre[class*="language-"] { margin-top: 0 !important; border-radius: 0 0 8px 8px !important; font-size: .82rem !important; max-height: 340px; overflow-y: auto; }
@@ -88,7 +91,7 @@
     <a href="#post-logout"   class="nav-link"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
 
     <div class="nav-section-label">Usuario</div>
-    <a href="#get-users"   class="nav-link"><i class="bi bi-people"></i><span>Listar Usuarios</span></a>
+    <a href="#get-usuarios-sistema" class="nav-link"><i class="bi bi-people"></i><span>Listar Usuarios</span></a>
     <a href="#get-user"    class="nav-link"><i class="bi bi-person-badge"></i><span>Ver Perfil</span></a>
     <a href="#put-user"    class="nav-link"><i class="bi bi-pencil-square"></i><span>Actualizar Perfil</span></a>
 
@@ -259,43 +262,92 @@
     <!-- ===== USUARIO ===== -->
     <h3 class="fw-bold text-muted mb-3" style="font-size:.85rem; text-transform:uppercase; letter-spacing:.1rem;">Usuario</h3>
 
-    <!-- GET /users -->
-    <section id="get-users" class="doc-section">
-        <h2 class="section-title"><i class="bi bi-people-fill text-primary"></i>Listar Usuarios</h2>
+    <!-- ★ GET /usuarios-sistema (NUEVO) -->
+    <section id="get-usuarios-sistema" class="doc-section">
+        <h2 class="section-title"><i class="bi bi-people-fill text-primary"></i>Listar Usuarios del Sistema</h2>
         <div class="api-card">
             <div class="api-header">
                 <span class="badge-method badge-get">GET</span>
-                <span class="api-endpoint">/api/users</span>
+                <span class="api-endpoint">/api/usuarios-sistema</span>
+                <span class="badge-admin"><i class="bi bi-shield-fill"></i> Solo Admin</span>
             </div>
             <div class="api-body">
-                <p class="api-desc">Retorna la lista de todos los usuarios registrados en el sistema.</p>
-                <p class="auth-note"><i class="bi bi-lock-fill"></i> Requiere: <code>Bearer Token</code></p>
+                <p class="api-desc">Retorna la lista completa de todos los usuarios registrados en el sistema, incluyendo su balance y rol. Solo accesible para usuarios con rol <code>admin</code>.</p>
+                <p class="auth-note"><i class="bi bi-lock-fill"></i> Requiere: <code>Bearer Token</code> (rol: <strong>admin</strong>)</p>
                 <div class="row">
                     <div class="col-md-12">
                         <h6 class="fw-bold mb-2">Response (200 OK)</h6>
                         <div class="code-block-header">JSON Response</div>
-                        <pre><code class="language-json">[
-    {
-        "id": 1,
-        "name": "Admin Principal",
-        "username": "admin",
-        "email": "admin@apuestas.com",
-        "balance": "1000.00",
-        "role": "admin",
-        "created_at": "2026-04-25T20:35:21.000000Z",
-        "updated_at": "2026-04-25T20:35:21.000000Z"
-    },
-    {
-        "id": 2,
-        "name": "Pablo",
-        "username": "pabloo",
-        "email": "pablo@apuestas.com",
-        "balance": "1000.00",
-        "role": "user",
-        "created_at": "2026-04-25T20:36:35.000000Z",
-        "updated_at": "2026-04-25T20:36:35.000000Z"
-    }
-]</code></pre>
+                        <pre><code class="language-json">{
+    "total": 5,
+    "usuarios": [
+        {
+            "id": 1,
+            "name": "admin principal",
+            "email": "admin@apuestas.com",
+            "balance": "5000.00",
+            "role": "admin"
+        },
+        {
+            "id": 2,
+            "name": "Pablo",
+            "email": "pablo@apuestas.com",
+            "balance": "1000.00",
+            "role": "user"
+        },
+        {
+            "id": 3,
+            "name": "Meza",
+            "email": "meza@apuestas.com",
+            "balance": "1250.00",
+            "role": "user"
+        },
+        {
+            "id": 4,
+            "name": "jaime p",
+            "email": "pjaime@apuestas.com",
+            "balance": "1597.50",
+            "role": "user"
+        },
+        {
+            "id": 5,
+            "name": "leo",
+            "email": "pleon@gmail.com",
+            "balance": "0.00",
+            "role": "user"
+        }
+    ]
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-2">Campos de respuesta</h6>
+                        <table class="table table-sm table-bordered" style="font-size:.85rem;">
+                            <thead class="table-light">
+                                <tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>total</code></td><td>integer</td><td>Total de usuarios en el sistema</td></tr>
+                                <tr><td><code>usuarios[].id</code></td><td>integer</td><td>ID único del usuario</td></tr>
+                                <tr><td><code>usuarios[].name</code></td><td>string</td><td>Nombre del usuario</td></tr>
+                                <tr><td><code>usuarios[].email</code></td><td>string</td><td>Correo electrónico</td></tr>
+                                <tr><td><code>usuarios[].balance</code></td><td>string</td><td>Saldo disponible en cuenta</td></tr>
+                                <tr><td><code>usuarios[].role</code></td><td>string</td><td><code>admin</code> o <code>user</code></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-2">Posibles errores</h6>
+                        <div class="code-block-header">403 — Sin permisos</div>
+                        <pre><code class="language-json">{
+    "message": "Esta acción no está autorizada."
+}</code></pre>
+                        <div class="code-block-header mt-2">401 — No autenticado</div>
+                        <pre><code class="language-json">{
+    "message": "Unauthenticated."
+}</code></pre>
                     </div>
                 </div>
             </div>
