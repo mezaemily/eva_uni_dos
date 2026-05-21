@@ -1,0 +1,79 @@
+/* src/views/CasinoHome.css */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+
+.casino-wrapper {
+    /* Variables de tu Blade Original */
+    --bg: #080c12;
+    --card: #0d1520;
+    --border: #1a2d45;
+    --gold: #f0c040;
+    --green: #10b981;
+    --blue: #3498db;
+    --violet: #8b5cf6;
+    --text: #e2eaf4;
+    --text2: #8b92a5;
+    --h: 'Outfit', sans-serif;
+    --r2: 12px;
+
+    font-family: var(--h);
+    background-color: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- NAVEGACIÓN (Para mantener el estilo de tu imagen) --- */
+.casino-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 2rem; background-color: var(--card);
+    border-bottom: 1px solid var(--border);
+}
+.nav-left { display: flex; align-items: center; gap: 3rem; }
+.casino-brand { font-size: 1.25rem; font-weight: 700; color: var(--gold); display: flex; align-items: center; gap: 0.5rem; letter-spacing: 1px; }
+.casino-brand::before { content: '✦'; font-size: 1rem; }
+.nav-links { display: flex; gap: 1.5rem; }
+.nav-links a { color: var(--text2); text-decoration: none; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: color .2s; }
+.nav-links a.active, .nav-links a:hover { color: var(--gold); }
+.nav-right { display: flex; align-items: center; gap: 1.25rem; }
+.balance-badge { background-color: rgba(240, 192, 64, 0.1); border: 1px solid rgba(240, 192, 64, 0.2); color: var(--gold); padding: 0.4rem 1rem; border-radius: 100px; font-weight: 700; font-size: 0.9rem; }
+.user-profile { display: flex; align-items: center; gap: 0.75rem; }
+.avatar { width: 32px; height: 32px; background-color: var(--violet); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
+.username { font-size: 0.9rem; font-weight: 500; color: var(--text2); }
+.btn-logout { background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: all .2s; }
+.btn-logout:hover { border-color: var(--text2); color: var(--text); }
+
+/* --- CLASES ESTRUCTURALES DEL BLADE --- */
+.casino-main {
+    padding: 2.5rem 4rem; max-width: 1400px; margin: 0 auto; width: 100%;
+}
+.g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.g2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+/* Tarjetas base */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 24px; }
+.card-hdr { font-family: var(--h); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text2); margin-bottom: 20px; }
+.empty { color: var(--text2); font-size: 13px; padding: 20px 0; text-align: center; }
+
+/* Efectos Hover de accesos rápidos */
+.action-link { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 20px; transition: border-color .2s; cursor: pointer; display: flex; align-items: center; gap: 14px; }
+.action-link.gold:hover { border-color: rgba(240, 192, 64, 0.35); }
+.action-link.violet:hover { border-color: rgba(139, 92, 246, 0.35); }
+.action-link.blue:hover { border-color: rgba(52, 152, 219, 0.35); }
+
+/* Utilidades de texto y tablas */
+.vs { font-size: 10px; color: var(--text2); margin: 0 6px; }
+.btn-blade { background: var(--gold); color: #000; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; transition: opacity .2s; }
+.btn-blade:hover { opacity: 0.9; }
+
+.tw { width: 100%; overflow-x: auto; }
+.tw table { width: 100%; border-collapse: collapse; }
+.tw th { text-align: left; font-size: 10px; text-transform: uppercase; color: var(--text2); padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.tw td { padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+.tw tr:last-child td { border-bottom: none; }
+.cm { font-size: 11px; color: var(--text2); margin-top: 4px; }
+.cr { color: #ef4444; font-weight: 600; font-size: 13px; }
+
+/* Badges */
+.bx { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+.bx.WON { background: rgba(16,185,129,.15); color: #10b981; }
