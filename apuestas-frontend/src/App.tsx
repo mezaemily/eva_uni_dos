@@ -1,34 +1,51 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// src/App.tsx
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './lib/auth';
+import Layout   from './components/Layout';
+import Login    from './pages/Login';
+import Register from './pages/Register';
+import Home       from './pages/Home';
+import Matches    from './pages/Matches';
+import Mines      from './pages/Mines';
+import Challenges from './pages/Challenges';
+import MyBets     from './pages/MyBets';
+import Profile    from './pages/Profile';
 
-// Importaciones (Asegúrate de que las carpetas coincidan)
-import Layout from './layouts/Layout';
-import Dashboard from './Dashboard'; 
-import Login from './layouts/Login';
-import Register from './layouts/Register';
-import CasinoHome from './layouts/home'; // <-- Asume que creaste la carpeta "views"
-
-function App() {
-  return (
-    <Router>
-      <Routes>
-        
-        {/* Ruta 1: El Inicio público (con menú dorado y footer) */}
-        <Route path="/" element={
-          <Layout>
-            <Dashboard />
-          </Layout>
-        } />
-
-        {/* Ruta 2 y 3: Login y Registro (pantallas limpias neón) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        
-        {/* Ruta 4: El panel privado del casino ya logueado */}
-        <Route path="/casino/home" element={<CasinoHome />} />
-
-      </Routes>
-    </Router>
-  );
+function Protected({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div style={{ color: 'var(--text2)', padding: 40, textAlign: 'center' }}>Cargando…</div>;
+  if (!user)   return <Navigate to="/login" replace />;
+  return <Layout>{children}</Layout>;
 }
 
-export default App;
+function Guest({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user)    return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Guest routes */}
+          <Route path="/login"    element={<Guest><Login /></Guest>} />
+          <Route path="/register" element={<Guest><Register /></Guest>} />
+
+          {/* Protected routes */}
+          <Route path="/"            element={<Protected><Home /></Protected>} />
+          <Route path="/partidos"    element={<Protected><Matches /></Protected>} />
+          <Route path="/minas"       element={<Protected><Mines /></Protected>} />
+          <Route path="/desafios"    element={<Protected><Challenges /></Protected>} />
+          <Route path="/mis-apuestas" element={<Protected><MyBets /></Protected>} />
+          <Route path="/perfil"      element={<Protected><Profile /></Protected>} />
+
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
